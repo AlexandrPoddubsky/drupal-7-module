@@ -1,0 +1,6 @@
+core = "7.x"
+description = Meredith Specific Spot.IM sidebar and commenting system integration.
+name = Meredith Spot.IM
+configure = admin/config/services/meredith_spot_im
+version = 7.x-1.0
+package = Meredith
