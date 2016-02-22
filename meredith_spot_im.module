@@ -105,6 +105,30 @@ function meredith_spot_im_page_alter(&$page) {
 }
 
 /**
+ * Implements hook_preprocess_html().
+ */
+function meredith_spot_im_preprocess_html(&$vars, $page) {
+  // Check validates this is not an administrative page.
+  if (path_is_admin(current_path())) {
+    return;
+  }
+  // Gets the appropriate variables from admin.inc.
+  $node = menu_get_object();
+  $enabled = variable_get('meredith_spot_im_enabled', FALSE);
+  $site_name = variable_get('meredith_spot_im_site_name', NULL);
+  // Grabs the node types from admin.inc.
+  $show_nodes_array = variable_get('meredith_spot_im_shownodes_nodes_toshow', array(''));
+  $is_node_type = $node && !empty($show_nodes_array[$node->type]);
+  $is_homepage = drupal_is_front_page() && variable_get('meredith_spot_im_enabled_home_page', FALSE);
+  $enabled = variable_get('meredith_spot_im_enabled', FALSE);
+  // Adds the spot-im-newsfeed class to the body to allow theme specific
+  // styling.
+  if ($enabled && $site_name && ($is_node_type || $is_homepage)) {
+    drupal_add_js(drupal_get_path('module', 'meredith_spot_im') . '/js/meredith_spot_im.js');
+  }
+}
+
+/**
  * Implements hook_permission().
  */
 function meredith_spot_im_permission() {
