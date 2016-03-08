@@ -39,8 +39,8 @@ function meredith_spot_im_admin_settings_form() {
   $form['meredith_spot_im_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Company Specific Spot.IM ID'),
-    '#default_value' => variable_get('meredith_spot_im_id', 'sp_yA3nEEO7'),
-    '#description' => t('This is provided from the vendor Example: "sp_yA3nEEO7".'),
+    '#default_value' => variable_get('meredith_spot_im_id', 'sp_xxxxxxxx'),
+    '#description' => t('This is provided from the vendor Example: "sp_xxxxxxxx".'),
   );
 
   $form['meredith_spot_im_site_name'] = array(
