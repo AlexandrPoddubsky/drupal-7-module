@@ -64,8 +64,8 @@ function spot_im_block_view($delta = '') {
       if ($enabled && $node && !empty($show_nodes_array[$node->type])) {
         $block['content'] = array(
           '#theme' => 'spot_im',
-          '#spot_im_nid' => $node->nid
-          '#weight' => 1020,
+          '#spot_im_nid' => $node->nid,
+          '#weight' => 1020
         );
       }
       break;
