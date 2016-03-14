@@ -1,0 +1,167 @@
+<?php
+/**
+ * @file
+ * Spot.IM
+ *
+ * Specific custom Spot.IM newsfeed, comment and social integration.
+ * Developed per EDRU-3236.
+ *
+ * Variables via spot_im.admin.inc:
+ * - 'spot_im_enabled' (Checkbox): determines if the javascript should
+ *   be enabled.
+ * - 'spot_im_id' (Text Area): the vendor supplied ID, unique to each
+ *   site.
+ * - 'spot_im_shownodes_nodes_toshow': List of selected nodes
+ *   available on a site.
+ * - 'spot_im_enabled_home_page' (Checkbox): determines if javascript
+ *   should be enabled on the homepage.
+ * - 'spot_im_comment_block_name' (Text Area): Display name of the
+ *   comments block.
+ * - 'spot_im_comment_block_weight': Weight of the displayed comments
+ *   block.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function spot_im_theme() {
+  return array(
+    'spot_im' => array(
+      'variables' => array(
+        'spot_im_nid' => NULL
+      ),
+      'template' => 'templates/embed',
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function spot_im_block_info() {
+  $blocks['spot_im'] = array(
+    'info' => t('Spot.IM Comments'),
+    'cache' => DRUPAL_CACHE_GLOBAL,
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function spot_im_block_view($delta = '') {
+  $block = array();
+  switch ($delta) {
+    case 'spot_im':
+      $node = menu_get_object();
+      $enabled = variable_get('spot_im_enabled', FALSE);
+
+      // Grabs the node types from admin.inc. Originally documented  with slightly
+      // different methodology from @ http://www.sitepoint.com/building-drupal-7-module-show-latest-nodes/.
+      $show_nodes_array = variable_get('spot_im_shownodes_nodes_toshow', array(''));
+      // Enables Spot.IM comments on specific nodes.
+      // Checks: Enabled? SiteName entered? Is a node? Is a selected node type?
+      if ($enabled && $node && !empty($show_nodes_array[$node->type])) {
+        $block['content'] = array(
+          '#theme' => 'spot_im',
+          '#spot_im_nid' => $node->nid,
+          '#weight' => 1020
+        );
+      }
+      break;
+  }
+  return $block;
+}
+
+/**
+ * Implements hook_page_alter().
+ */
+function spot_im_page_alter(&$page) {
+  // Check validates this is not an administrative page.
+  if (path_is_admin(current_path())) {
+    return;
+  }
+  // Gets the appropriate variables from admin.inc.
+  $node = menu_get_object();
+  $enabled = variable_get('spot_im_enabled', FALSE);
+  $spot_im_id = variable_get('spot_im_id', NULL);
+
+  // Grabs the node types from admin.inc.
+  $show_nodes_array = variable_get('spot_im_shownodes_nodes_toshow', array(''));
+  $is_node_type = $node && !empty($show_nodes_array[$node->type]);
+  $is_homepage = drupal_is_front_page() && variable_get('spot_im_enabled_home_page', FALSE);
+
+  // Enables Spot.IM javascript on specific nodes or homepage.
+  if ($enabled && ($is_node_type || $is_homepage)) {
+    $page['content']['#attached']['js'][] = array(
+      'type' => 'inline',
+      'data' => '!function(t,e,n){function a(t){var a=e.createElement("script");a.type="text/javascript",a.async=!0,a.src=("https:"===e.location.protocol?"https":"http")+":"+n,(t||e.body||e.head).appendChild(a)}function o(){var t=e.getElementsByTagName("script"),n=t[t.length-1];return n.parentNode} var p=o();t.spotId="' . $spot_im_id . '",t.parentElement=p,a(p)}(window.SPOTIM={},document,"//www.spot.im/launcher/bundle.js");',
+      'group'=> JS_THEME,
+    );
+  }
+}
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function spot_im_preprocess_html(&$vars, $page) {
+  // Check validates this is not an administrative page.
+  if (path_is_admin(current_path())) {
+    return;
+  }
+
+  // Gets the appropriate variables from admin.inc.
+  $node = menu_get_object();
+  $enabled = variable_get('spot_im_enabled', FALSE);
+
+  // Grabs the node types from admin.inc.
+  $show_nodes_array = variable_get('spot_im_shownodes_nodes_toshow', array(''));
+  $is_node_type = $node && !empty($show_nodes_array[$node->type]);
+  $is_homepage = drupal_is_front_page() && variable_get('spot_im_enabled_home_page', FALSE);
+  $enabled = variable_get('spot_im_enabled', FALSE);
+
+  // Adds the spot-im-newsfeed class to the body to allow theme specific
+  // styling.
+  if ($enabled && ($is_node_type || $is_homepage)) {
+    drupal_add_js(drupal_get_path('module', 'spot_im') . '/js/spot_im.js');
+  }
+}
+
+/**
+ * Implements hook_permission().
+ */
+function spot_im_permission() {
+  return array(
+    'administer spot.im integration' => array(
+      'title' => t('Administer Spot.IM Integration'),
+      'description' => t('Administer account settings and visibility of Spot.IM on your site.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function spot_im_menu() {
+  $items['admin/config/services/spot_im'] = array(
+    'title' => t('Spot.IM'),
+    'description' => t('Configure Spot.IM on your website.'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('spot_im_admin_settings_form'),
+    'access arguments' => array('administer spot.im integration'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'spot_im.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_help().
+ */
+function spot_im_help($path, $arg) {
+  switch ($path) {
+    case 'admin/config/system/spot_im':
+      return t('Spot.IM is a commenting system. Specific contact is Idan Mitrofanov (idanm@spot.im).');
+  }
+}
+

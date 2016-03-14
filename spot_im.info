@@ -1,0 +1,6 @@
+core = "7.x"
+description = Spot.IM commenting system integration.
+name = Spot.IM Comments
+configure = admin/config/services/spot_im
+version = 7.x-1.0
+package = SpotIM
