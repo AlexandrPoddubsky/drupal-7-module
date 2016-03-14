@@ -12,4 +12,4 @@ There is a custom administrative interface which allows for the following:
 - Allows you to set a specific sitename.
 - Allows you to set a specific Spot.IM ID.
 
-<!-- Also available on [Drupal.org](https://www.drupal.org/sandbox/holyfire/2646850) -->
+Also available on [Drupal.org](https://www.drupal.org/sandbox/idanm/2686897)
